@@ -161,7 +161,12 @@ class FruitDetectionNode(Node):
                     if (self.prediction_json_dir!=""):
                         os.makedirs(self.prediction_json_dir, exist_ok=True)
                         prediction_json_output_file = os.path.join(self.prediction_json_dir, filename)+'.json'
-                    self.det_predictor.get_predictions_image(rgbd_image, prediction_json_output_file, self.prediction_output_dir, image_file_name, sample_no, self.fruit_type)
+                    # Check if there are predictions or not
+                    result = self.det_predictor.get_predictions_image(rgbd_image, prediction_json_output_file, self.prediction_output_dir, image_file_name, sample_no, self.fruit_type)
+                    if result is None:
+                        self.get_logger().warn(f"No detections in {image_file_name}. Skipping...")
+                        continue
+                
                 else:
                     self.get_logger().warn(f"Warning: No corresponding depth file: {corr_depth_file} for rgb file: {rgb_file}")
                 sample_no += 1
