@@ -108,6 +108,21 @@ class DetectronPredictor(LearnerPredictor):
         try:
             outputs = self.predictor(rgb_image)
             predictions = outputs["instances"].to("cpu")
+
+            # It checks if there are predictions, if there are none the image is saved in rgb format
+            if len(predictions) == 0:
+                print(f"No detections found in {image_file_name}. Skipping...")
+
+                pred_image_dir = os.path.join(prediction_output_dir, 'predicted_images')
+                if not os.path.exists(pred_image_dir):
+                    os.makedirs(pred_image_dir)
+
+                overlay_fName = os.path.join(pred_image_dir, os.path.basename(image_file_name))
+
+                cv2.imwrite(overlay_fName, cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+                print(f"No detections, RGB image saved: {overlay_fName} ---------------------")
+                return None     #Return None to indicate that there were no detections
+            
             vis_aoc = AOCVisualizer(rgb_image,
                                     metadata=self.metadata[0],
                                     scale=self.scale,
@@ -151,7 +166,16 @@ class DetectronPredictor(LearnerPredictor):
         except Exception as e:
             logging.error(e)
             if(__debug__): print(traceback.format_exc())
-            raise Exception(e)
+            
+            pred_image_dir = os.path.join(prediction_output_dir, 'predicted_images')
+            if not os.path.exists(pred_image_dir):
+                os.makedirs(pred_image_dir)
+
+            overlay_fName = os.path.join(pred_image_dir, os.path.basename(image_file_name))
+            cv2.imwrite(overlay_fName, cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+            print(f"No detections, RGB image saved: {overlay_fName}----------------------")
+
+            return None
 
     def get_predictions_message(self, rgbd_image, image_id=0,fruit_type=FruitTypes.Strawberry):
         depth_image = rgbd_image[:, :, 3]
