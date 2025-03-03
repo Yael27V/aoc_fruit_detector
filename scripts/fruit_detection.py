@@ -143,12 +143,13 @@ class FruitDetectionNode(Node):
         else: 
             all_files = sorted([f for f in os.listdir(self.image_dir) if os.path.isfile(os.path.join(self.image_dir, f))])
 
-            rgb_files = sorted([f for f in all_files if 'image' in f])
-            depth_files = sorted([f for f in all_files if 'depth' in f])
+            # Change in images search format
+            rgb_files = sorted([f for f in all_files if '_rgb.png' in f])
+            depth_files = sorted([f for f in all_files if '_depth.png' in f])
 
             sample_no = 1
             for rgb_file in rgb_files:
-                corr_depth_file = rgb_file.replace('image', 'depth', 1)
+                corr_depth_file = rgb_file.replace('_rgb.png', '_depth.png', 1)
 
                 if corr_depth_file in depth_files:
                     image_file_name=os.path.join(self.image_dir, rgb_file)
